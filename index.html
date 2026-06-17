@@ -215,8 +215,7 @@
 
                 </div>
 
-                <div class="w-full text-center text-xs font-bold bg-yellow-100 text-yellow-800 py-1.5 px-3 rounded-xl border border-yellow-300">
-                    <span v-if="config.operation === 'Tambah' || config.operation === 'Darab'">Sila isi kotak jawapan dari <b>kanan ke kiri</b> (mula dari kotak hijau).</span>
+                <div v-if="config.operation === 'Tolak' || config.operation === 'Bahagi'" class="w-full text-center text-xs font-bold bg-yellow-100 text-yellow-800 py-1.5 px-3 rounded-xl border border-yellow-300">
                     <span v-if="config.operation === 'Tolak'">Sentuh nombor atas untuk potong bagi pinjam (*borrow*) jika tidak cukup!</span>
                     <span v-if="config.operation === 'Bahagi'">Selesaikan langkah demi langkah mengikut urutan kotak.</span>
                 </div>
@@ -652,17 +651,13 @@
                     if (target.type === 'answer') {
                         answerArray.value[target.index] = key;
                         
-                        // Perubahan Logik: Bagi Tambah & Darab, tumpukan perhatian kepada turutan kotak pengumpul semula (carry)
                         if ((op === 'Tambah' || op === 'Darab') && target.index < maxColumns.value - 1) {
-                            // Alirkan kotak aktif terus ke kotak carry atas bagi lajur sebelah kiri (index + 1)
                             activeTarget.value = { type: 'carry', index: target.index + 1 };
                         } else if (target.index < maxColumns.value - 1) {
-                            // Operasi Tolak mengekalkan tingkah laku biasa (terus ke kotak jawapan sebelah)
                             activeTarget.value = { type: 'answer', index: target.index + 1 };
                         }
                     } else if (target.type === 'carry') {
                         carryArray.value[target.index] = key;
-                        // Selepas kotak carry atas diisi, kembalikan fokus ke kotak jawapan bawah bagi lajur yang sama (target.index)
                         activeTarget.value = { type: 'answer', index: target.index };
                     } else if (target.type === 'borrow') {
                         let currentVal = String(borrowArray.value[target.index] || '');
