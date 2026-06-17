@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="ms" class="h-full overflow-hidden select-none touch-none">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>MathPintar - Latihan Matematik Bentuk Lazim</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -13,12 +13,11 @@
         body {
             font-family: 'Quicksand', sans-serif;
             background-color: #f0fdf4;
-            user-select: none;
+            -webkit-text-size-adjust: 100%;
         }
         .font-kids {
             font-family: 'Fredoka', sans-serif;
         }
-        /* Memastikan font nombor soalan adalah monospace tulen supaya saiz karakter sentiasa sama */
         .math-font {
             font-family: 'Share Tech Mono', monospace;
         }
@@ -38,12 +37,12 @@
         [v-cloak] { display: none; }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col justify-between selection:bg-yellow-200">
+<body class="text-slate-800 h-full w-full flex justify-center items-center p-0 m-0 overflow-hidden bg-slate-100">
 
-    <div id="app" class="w-full max-w-md mx-auto bg-white min-h-screen shadow-xl flex flex-col justify-between relative overflow-hidden" v-cloak>
+    <div id="app" class="w-full max-w-md h-full bg-white shadow-xl flex flex-col justify-between relative overflow-hidden" v-cloak>
         
-        <header class="bg-emerald-500 text-white p-4 flex justify-between items-center shadow-md rounded-b-2xl">
-            <h1 @click="goToMenu" class="text-2xl font-bold tracking-wide font-kids cursor-pointer">✏️ MathPintar</h1>
+        <header class="bg-emerald-500 text-white p-4 flex justify-between items-center shadow-md rounded-b-2xl shrink-0">
+            <h1 @click="goToMenu" class="text-2xl font-bold tracking-wide font-kids cursor-pointer select-none">✏️ MathPintar</h1>
             <div v-if="user" class="flex items-center gap-2">
                 <button v-if="screen === 'menu'" @click="openReports" class="bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1">📊 Rekod</button>
                 <span class="text-sm font-bold bg-emerald-600 px-3 py-1 rounded-full text-yellow-200 max-w-[100px] truncate">👤 {{ user }}</span>
@@ -51,7 +50,7 @@
             </div>
         </header>
 
-        <main class="flex-grow p-4 flex flex-col justify-start items-center w-full overflow-y-auto">
+        <main class="flex-grow p-4 flex flex-col justify-start items-center w-full overflow-y-auto touch-pan-y">
 
             <div v-if="screen === 'login'" class="w-full space-y-6 text-center my-auto">
                 <div class="bg-yellow-100 p-6 rounded-3xl border-4 border-yellow-400 shadow-inner">
@@ -61,7 +60,7 @@
                 </div>
                 <div class="space-y-3">
                     <label class="block text-left font-bold text-lg text-slate-700 px-1">Masukkan Nama Anda:</label>
-                    <input type="text" v-model="usernameInput" placeholder="Contoh: Ahmad" class="w-full p-4 text-xl border-4 border-emerald-400 rounded-2xl focus:outline-none focus:border-yellow-400 text-center font-bold tracking-wide uppercase transition-colors" @keyup.enter="login" maxLength="15">
+                    <input type="text" v-model="usernameInput" placeholder="Contoh: Ahmad" class="w-full p-4 text-xl border-4 border-emerald-400 rounded-2xl focus:outline-none focus:border-yellow-400 text-center font-bold tracking-wide uppercase transition-colors text-base" @keyup.enter="login" maxLength="15">
                 </div>
                 <button @click="login" :disabled="!usernameInput.trim()" class="w-full bg-yellow-400 hover:bg-yellow-500 disabled:opacity-50 disabled:pointer-events-none text-slate-900 font-black text-2xl py-4 rounded-2xl shadow-lg border-b-8 border-yellow-600 transition-all transform active:scale-95 active:border-b-2 mt-4 uppercase">
                     🚀 MULA
@@ -216,7 +215,7 @@
 
                 </div>
 
-                <div class="w-full text-center text-sm font-bold bg-yellow-100 text-yellow-800 py-1.5 px-3 rounded-xl border border-yellow-300">
+                <div class="w-full text-center text-xs font-bold bg-yellow-100 text-yellow-800 py-1.5 px-3 rounded-xl border border-yellow-300">
                     <span v-if="config.operation === 'Tambah' || config.operation === 'Darab'">Sila isi kotak jawapan dari <b>kanan ke kiri</b> (mula dari kotak hijau).</span>
                     <span v-if="config.operation === 'Tolak'">Sentuh nombor atas untuk potong bagi pinjam (*borrow*) jika tidak cukup!</span>
                     <span v-if="config.operation === 'Bahagi'">Selesaikan langkah demi langkah mengikut urutan kotak.</span>
@@ -330,7 +329,7 @@
 
         </main>
 
-        <footer v-if="screen === 'gameplay'" class="bg-slate-200 p-3 rounded-t-3xl shadow-2xl w-full border-t border-slate-300">
+        <footer v-if="screen === 'gameplay'" class="bg-slate-200 p-3 rounded-t-3xl shadow-2xl w-full border-t border-slate-300 shrink-0">
             <div class="grid grid-cols-3 gap-2 max-w-sm mx-auto">
                 <button v-for="num in ['1', '2', '3', '4', '5', '6', '7', '8', '9']" :key="num" @click="pressKey(num)" class="bg-white active:bg-slate-300 font-bold text-2xl py-3 rounded-xl shadow-sm text-slate-800 border-b-4 border-slate-300 transition-all transform active:scale-95">
                     {{ num }}
@@ -385,10 +384,8 @@
                 const timerInterval = ref(null);
                 const finalTimeDisplay = ref('');
 
-                // Senarai Log Rekod Struktur Array Data
                 const reportList = ref([]);
 
-                // FUNGSI UTAMA WEB AUDIO API (Sintesis Bunyi)
                 const playSound = (type) => {
                     try {
                         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -441,7 +438,6 @@
                     }
                 };
 
-                // Memuat turun sejarah data rekod sewaktu aplikasi diaktifkan
                 const loadReports = () => {
                     if (!user.value) return;
                     const saved = localStorage.getItem(`math_report_${user.value}`);
@@ -480,7 +476,6 @@
                     return Math.round((score.value / currentQuestionIndex.value) * 100);
                 });
 
-                // Pengiraan Komputasi Data Ringkasan Halaman Laporan
                 const reportSummary = computed(() => {
                     if (reportList.value.length === 0) {
                         return { totalSessions: 0, avgAccuracy: 0, avgTime: '0s' };
@@ -774,7 +769,6 @@
                     if (mins > 0) durationStr = `${mins}m ${secs}s`;
                     finalTimeDisplay.value = mins > 0 ? `${mins} minit ${secs} saat` : `${secs} saat`;
 
-                    // Simpan Log Rekod ke LocalStorage
                     const now = new Date();
                     const dateStr = `${now.getDate()}/${now.getMonth()+1} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
                     
@@ -789,7 +783,7 @@
                         date: dateStr
                     };
 
-                    reportList.value.unshift(newRecord); // Letak rekod terbaru di atas sekali
+                    reportList.value.unshift(newRecord); 
                     localStorage.setItem(`math_report_${user.value}`, JSON.stringify(reportList.value));
 
                     screen.value = 'results';
