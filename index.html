@@ -568,14 +568,14 @@
                             }
                         } else if (op === 'Darab') {
                             if (diff === 'Mudah') {
-                                num1 = Math.floor(Math.random() * 9) + 1;
-                                num2 = Math.floor(Math.random() * 9) + 1;
+                                num1 = Math.floor(Math.random() * 9) + 1; // 1 digit
+                                num2 = Math.floor(Math.random() * 9) + 1; // 1 digit
                             } else if (diff === 'Sederhana') {
-                                num1 = Math.floor(Math.random() * 90) + 10;
-                                num2 = Math.floor(Math.random() * 9) + 1;
+                                num1 = Math.floor(Math.random() * 90) + 10; // 2 digit
+                                num2 = Math.floor(Math.random() * 9) + 1;  // 1 digit
                             } else {
-                                num1 = Math.floor(Math.random() * 900) + 100;
-                                num2 = Math.floor(Math.random() * 90) + 10;
+                                num1 = Math.floor(Math.random() * 900) + 100; // 3 digit
+                                num2 = Math.floor(Math.random() * 9) + 1;   // 1 digit
                             }
                         } else if (op === 'Bahagi') {
                             if (diff === 'Mudah') {
