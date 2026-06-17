@@ -638,6 +638,7 @@
                 const pressKey = (key) => {
                     playSound('click');
                     const target = activeTarget.value;
+                    const op = config.value.operation;
                     
                     if (key === 'C') {
                         clearActiveTarget();
@@ -650,11 +651,19 @@
 
                     if (target.type === 'answer') {
                         answerArray.value[target.index] = key;
-                        if (target.index < maxColumns.value - 1) {
+                        
+                        // Perubahan Logik: Bagi Tambah & Darab, tumpukan perhatian kepada turutan kotak pengumpul semula (carry)
+                        if ((op === 'Tambah' || op === 'Darab') && target.index < maxColumns.value - 1) {
+                            // Alirkan kotak aktif terus ke kotak carry atas bagi lajur sebelah kiri (index + 1)
+                            activeTarget.value = { type: 'carry', index: target.index + 1 };
+                        } else if (target.index < maxColumns.value - 1) {
+                            // Operasi Tolak mengekalkan tingkah laku biasa (terus ke kotak jawapan sebelah)
                             activeTarget.value = { type: 'answer', index: target.index + 1 };
                         }
                     } else if (target.type === 'carry') {
                         carryArray.value[target.index] = key;
+                        // Selepas kotak carry atas diisi, kembalikan fokus ke kotak jawapan bawah bagi lajur yang sama (target.index)
+                        activeTarget.value = { type: 'answer', index: target.index };
                     } else if (target.type === 'borrow') {
                         let currentVal = String(borrowArray.value[target.index] || '');
                         if (currentVal.length < 2) {
@@ -681,11 +690,22 @@
 
                 const backspaceActiveTarget = () => {
                     const target = activeTarget.value;
+                    const op = config.value.operation;
+
                     if (target.type === 'answer') {
                         answerArray.value[target.index] = '';
-                        if (target.index > 0) activeTarget.value = { type: 'answer', index: target.index - 1 };
+                        if (target.index > 0) {
+                            if (op === 'Tambah' || op === 'Darab') {
+                                activeTarget.value = { type: 'carry', index: target.index };
+                            } else {
+                                activeTarget.value = { type: 'answer', index: target.index - 1 };
+                            }
+                        }
                     }
-                    if (target.type === 'carry') carryArray.value[target.index] = '';
+                    if (target.type === 'carry') {
+                        carryArray.value[target.index] = '';
+                        activeTarget.value = { type: 'answer', index: target.index - 1 };
+                    }
                     if (target.type === 'borrow') {
                         let val = String(borrowArray.value[target.index] || '');
                         borrowArray.value[target.index] = val.substring(0, val.length - 1);
