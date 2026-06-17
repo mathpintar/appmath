@@ -15,9 +15,6 @@
             background-color: #f0fdf4;
             user-select: none;
         }
-        .shredded-border {
-            border-style: dashed;
-        }
         .strikethrough {
             position: relative;
         }
@@ -31,6 +28,7 @@
             background: #ef4444;
             transform: rotate(-15deg);
         }
+        [v-cloak] { display: none; }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col justify-between selection:bg-yellow-200">
@@ -47,7 +45,7 @@
 
         <main class="flex-grow p-4 flex flex-col justify-center items-center w-full">
 
-            <div v-if="screen === 'login'" class="w-full space-y-6 text-center animate-fade-in">
+            <div v-if="screen === 'login'" class="w-full space-y-6 text-center">
                 <div class="bg-yellow-100 p-6 rounded-3xl border-4 border-yellow-400 shadow-inner">
                     <span class="text-6xl block mb-2">🧠</span>
                     <h2 class="text-3xl font-black text-emerald-600 font-['Fredoka']">Selamat Datang!</h2>
@@ -62,7 +60,7 @@
                 </button>
             </div>
 
-            <div v-if="screen === 'menu'" class="w-full space-y-6 animate-fade-in">
+            <div v-if="screen === 'menu'" class="w-full space-y-6">
                 <div class="bg-emerald-50 border-2 border-emerald-200 p-4 rounded-2xl">
                     <p class="text-lg font-bold text-slate-700">Hai, <span class="text-emerald-600 font-black text-xl">{{ user }}</span>! 👋</p>
                     <p class="text-xs text-slate-500">Sila pilih tetapan kuiz anda di bawah:</p>
@@ -103,7 +101,7 @@
                 </button>
             </div>
 
-            <div v-if="screen === 'gameplay'" class="w-full flex flex-col justify-between items-center space-y-4 animate-fade-in">
+            <div v-if="screen === 'gameplay'" class="w-full flex flex-col justify-between items-center space-y-4">
                 
                 <div class="w-full bg-slate-100 p-3 rounded-2xl border-2 border-slate-200 flex justify-between items-center text-xs font-bold text-slate-600">
                     <div>Soalan: <span class="text-emerald-600 text-sm">{{ currentQuestionIndex + 1 }}</span> / {{ config.totalQuestions }}</div>
@@ -111,60 +109,86 @@
                     <div>Skor: <span class="text-blue-600 text-sm">{{ score }}</span> ({{ currentAccuracy }}%)</div>
                 </div>
 
-                <div class="w-full flex-grow bg-amber-50 p-6 rounded-3xl border-4 border-amber-200 shadow-inner min-h-[260px] flex flex-col justify-center items-center relative font-mono">
+                <div class="w-full flex-grow bg-amber-50 p-6 rounded-3xl border-4 border-amber-200 shadow-inner min-h-[280px] flex flex-col justify-center items-center relative font-mono">
                     
-                    <div v-if="config.operation === 'Tambah' || config.operation === 'Darab'" class="w-full max-w-[200px] flex flex-col items-end text-3xl font-bold tracking-widest relative">
-                        <div class="flex justify-end w-full pr-2 mb-2 gap-2 h-8">
-                            <input v-for="(c, i) in carryArray.length" :key="i" type="text" readonly :value="carryArray[carryArray.length - 1 - i] || ''" @click="activeTarget = {type: 'carry', index: carryArray.length - 1 - i}" :class="activeTarget.type === 'carry' && activeTarget.index === (carryArray.length - 1 - i) ? 'border-amber-500 bg-yellow-200 animate-pulse' : 'border-amber-300 bg-white'" class="w-8 h-8 text-sm text-center border-2 border-dashed rounded font-bold text-purple-600 focus:outline-none">
-                        </div>
+                    <div v-if="config.operation === 'Tambah' || config.operation === 'Darab'" class="flex flex-col items-end text-3xl font-bold tracking-widest relative">
                         
-                        <div class="pr-2">{{ currentQuestion.num1 }}</div>
-                        <div class="w-full flex justify-between items-center pr-2 border-b-4 border-slate-800 pb-1">
-                            <span>{{ config.operation === 'Tambah' ? '+' : '×' }}</span>
-                            <span>{{ currentQuestion.num2 }}</span>
-                        </div>
-                        
-                        <div class="flex flex-row-reverse justify-start w-full pt-2 gap-2">
-                            <input v-for="(digit, idx) in answerArray.length" :key="idx" type="text" readonly :value="answerArray[idx] || ''" @click="activeTarget = {type: 'answer', index: idx}" :class="activeTarget.type === 'answer' && activeTarget.index === idx ? 'border-emerald-500 bg-emerald-100' : 'border-slate-400 bg-white'" class="w-10 h-12 text-center border-3 rounded-lg text-2xl font-black text-slate-800 focus:outline-none transition-all">
+                        <div class="grid justify-items-center items-center gap-y-1" :style="{ 'grid-template-columns': `repeat(${maxColumns}, minmax(40px, max-content))` }">
+                            
+                            <div v-for="colIdx in maxColumns" :key="'carry-'+colIdx}" class="w-10 h-8 flex justify-center items-center">
+                                <input type="text" readonly 
+                                       :value="carryArray[maxColumns - colIdx] || ''" 
+                                       @click="activeTarget = {type: 'carry', index: maxColumns - colIdx}" 
+                                       :class="activeTarget.type === 'carry' && activeTarget.index === (maxColumns - colIdx) ? 'border-purple-600 bg-yellow-200 animate-pulse' : 'border-amber-300 bg-white'" 
+                                       class="w-8 h-8 text-xs text-center border-2 border-dashed rounded font-bold text-purple-600 focus:outline-none">
+                            </div>
+
+                            <div v-for="colIdx in maxColumns" :key="'num1-'+colIdx}" class="w-10 text-center text-slate-800">
+                                {{ getDigitAt(currentQuestion.num1, maxColumns - colIdx) }}
+                            </div>
+
+                            <div v-for="colIdx in maxColumns" :key="'num2-'+colIdx}" class="w-10 text-center text-slate-800 border-b-4 border-slate-800 pb-1 relative">
+                                <span v-if="colIdx === 1" class="absolute left-[-25px] font-bold text-2xl text-slate-600">
+                                    {{ config.operation === 'Tambah' ? '+' : '×' }}
+                                </span>
+                                {{ getDigitAt(currentQuestion.num2, maxColumns - colIdx) }}
+                            </div>
+
+                            <div v-for="colIdx in maxColumns" :key="'ans-'+colIdx}" class="w-10 pt-2 flex justify-center">
+                                <input type="text" readonly 
+                                       :value="answerArray[maxColumns - colIdx] || ''" 
+                                       @click="activeTarget = {type: 'answer', index: maxColumns - colIdx}" 
+                                       :class="activeTarget.type === 'answer' && activeTarget.index === (maxColumns - colIdx) ? 'border-emerald-500 bg-emerald-100' : 'border-slate-400 bg-white'" 
+                                       class="w-9 h-11 text-center border-2 rounded-lg text-xl font-black text-slate-800 focus:outline-none transition-all">
+                            </div>
+
                         </div>
                     </div>
 
-                    <div v-if="config.operation === 'Tolak'" class="w-full max-w-[220px] flex flex-col items-end text-3xl font-bold tracking-widest relative">
-                        <div class="flex flex-row-reverse justify-start w-full pr-2 mb-2 gap-2 h-14">
-                            <div v-for="(digit, idx) in num1Digits" :key="idx" class="w-10 flex flex-col items-center justify-end gap-0.5">
-                                <input type="text" readonly :value="borrowArray[idx] || ''" @click="activeTarget = {type: 'borrow', index: idx}" :class="activeTarget.type === 'borrow' && activeTarget.index === idx ? 'border-red-500 bg-red-100' : 'border-red-300 bg-white'" class="w-8 h-6 text-xs text-center border-2 border-dashed rounded font-bold text-red-600 focus:outline-none">
-                            </div>
-                        </div>
-
-                        <div class="flex flex-row-reverse justify-start w-full pr-2 font-bold mb-1">
-                            <span v-for="(digit, idx) in num1Digits" :key="idx" :class="{'strikethrough text-slate-400': borrowArray[idx] !== undefined && borrowArray[idx] !== ''}" class="w-10 text-center select-none cursor-pointer" @click="triggerBorrow(idx)">
-                                {{ digit }}
-                            </span>
-                        </div>
+                    <div v-if="config.operation === 'Tolak'" class="flex flex-col items-end text-3xl font-bold tracking-widest relative">
                         
-                        <div class="w-full flex justify-between items-center pr-2 border-b-4 border-slate-800 pb-1">
-                            <span>-</span>
-                            <div class="flex flex-row-reverse justify-start">
-                                <span v-for="(digit, idx) in num2Digits" :key="idx" class="w-10 text-center">{{ digit }}</span>
+                        <div class="grid justify-items-center items-center gap-y-1" :style="{ 'grid-template-columns': `repeat(${maxColumns}, minmax(40px, max-content))` }">
+                            
+                            <div v-for="colIdx in maxColumns" :key="'borrow-'+colIdx}" class="w-10 h-6 flex justify-center items-center">
+                                <input v-if="getDigitAt(currentQuestion.num1, maxColumns - colIdx) !== ''"
+                                       type="text" readonly 
+                                       :value="borrowArray[maxColumns - colIdx] || ''" 
+                                       @click="activeTarget = {type: 'borrow', index: maxColumns - colIdx}" 
+                                       :class="activeTarget.type === 'borrow' && activeTarget.index === (maxColumns - colIdx) ? 'border-red-500 bg-red-100' : 'border-red-300 bg-white'" 
+                                       class="w-8 h-6 text-xs text-center border-2 border-dashed rounded font-bold text-red-600 focus:outline-none">
                             </div>
-                        </div>
 
-                        <div class="flex flex-row-reverse justify-start w-full pt-2 gap-2">
-                            <input v-for="(digit, idx) in answerArray.length" :key="idx" type="text" readonly :value="answerArray[idx] || ''" @click="activeTarget = {type: 'answer', index: idx}" :class="activeTarget.type === 'answer' && activeTarget.index === idx ? 'border-emerald-500 bg-emerald-100' : 'border-slate-400 bg-white'" class="w-10 h-12 text-center border-3 rounded-lg text-2xl font-black text-slate-800 focus:outline-none transition-all">
+                            <div v-for="colIdx in maxColumns" :key="'num1-tolak-'+colIdx}" class="w-10 text-center text-slate-800 select-none cursor-pointer" @click="triggerBorrow(maxColumns - colIdx)">
+                                <span :class="{'strikethrough text-slate-400': borrowArray[maxColumns - colIdx] !== undefined && borrowArray[maxColumns - colIdx] !== ''}">
+                                    {{ getDigitAt(currentQuestion.num1, maxColumns - colIdx) }}
+                                </span>
+                            </div>
+
+                            <div v-for="colIdx in maxColumns" :key="'num2-tolak-'+colIdx}" class="w-10 text-center text-slate-800 border-b-4 border-slate-800 pb-1 relative">
+                                <span v-if="colIdx === 1" class="absolute left-[-25px] font-bold text-2xl text-slate-600">-</span>
+                                {{ getDigitAt(currentQuestion.num2, maxColumns - colIdx) }}
+                            </div>
+
+                            <div v-for="colIdx in maxColumns" :key="'ans-tolak-'+colIdx}" class="w-10 pt-2 flex justify-center">
+                                <input type="text" readonly 
+                                       :value="answerArray[maxColumns - colIdx] || ''" 
+                                       @click="activeTarget = {type: 'answer', index: maxColumns - colIdx}" 
+                                       :class="activeTarget.type === 'answer' && activeTarget.index === (maxColumns - colIdx) ? 'border-emerald-500 bg-emerald-100' : 'border-slate-400 bg-white'" 
+                                       class="w-9 h-11 text-center border-2 rounded-lg text-xl font-black text-slate-800 focus:outline-none transition-all">
+                            </div>
+
                         </div>
                     </div>
 
                     <div v-if="config.operation === 'Bahagi'" class="w-full flex flex-col items-center justify-center font-bold">
                         <div class="flex items-start text-3xl mb-4 relative pr-6">
                             <div class="pt-9 pr-2 text-slate-700">{{ currentQuestion.num2 }}</div>
-                            
                             <div class="border-t-4 border-l-4 border-slate-800 rounded-tl-xl pl-3 pt-1 flex flex-col items-start">
                                 <div class="flex gap-1 mb-2">
                                     <input type="text" readonly :value="divisionInputs.quotient" @click="activeTarget = {type: 'div_quotient', index: 0}" :class="activeTarget.type === 'div_quotient' ? 'border-emerald-500 bg-emerald-100' : 'border-slate-400 bg-white'" class="w-16 h-10 text-center border-2 rounded text-xl font-bold focus:outline-none">
                                     <span class="text-xs text-slate-400 self-end ml-1">Jawapan</span>
                                 </div>
                                 <div class="tracking-widest text-slate-800 mb-2 pl-1">{{ currentQuestion.num1 }}</div>
-                                
                                 <div class="flex flex-col items-start pl-1 border-b-2 border-slate-700 pb-1">
                                     <input type="text" readonly :value="divisionInputs.multiply" @click="activeTarget = {type: 'div_multiply', index: 0}" :class="activeTarget.type === 'div_multiply' ? 'border-blue-500 bg-blue-50' : 'border-dashed border-slate-400 bg-white'" class="w-20 h-8 text-center text-lg border-2 rounded font-mono placeholder-slate-300" placeholder="Hasil ×">
                                 </div>
@@ -179,9 +203,9 @@
                 </div>
 
                 <div class="w-full text-center text-sm font-bold bg-yellow-100 text-yellow-800 py-1.5 px-3 rounded-xl border border-yellow-300">
-                    <span v-if="config.operation === 'Tambah' || config.operation === 'Darab'">Sila isi kotak jawapan dari <b>kanan ke kiri</b>. Sentuh kotak di atas jika ada baki bawa ke atas (carry).</span>
-                    <span v-if="config.operation === 'Tolak'">Klik pada angka atas untuk potong bagi pinjam (borrow) jika tidak cukup!</span>
-                    <span v-if="config.operation === 'Bahagi'">Isi jawapan utama di atas, selesaikan pendaraban/penolakan untuk isi baki di bawah.</span>
+                    <span v-if="config.operation === 'Tambah' || config.operation === 'Darab'">Sila isi kotak jawapan dari <b>kanan ke kiri</b>. Sentuh kotak putus-putus atas untuk nilai bawa atas (*carry*).</span>
+                    <span v-if="config.operation === 'Tolak'">Sentuh angka atas untuk *potong* dan tulis nilai pinjam (*borrow*) baru di kotak atasnya!</span>
+                    <span v-if="config.operation === 'Bahagi'">Isi jawapan utama di atas, lakukan pendaraban/penolakan dan tentukan baki di bawah.</span>
                 </div>
 
                 <button @click="submitAnswer" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-black text-lg py-3.5 rounded-2xl shadow-md border-b-4 border-blue-700 transition-all transform active:scale-95 active:border-b-0 uppercase">
@@ -189,7 +213,7 @@
                 </button>
             </div>
 
-            <div v-if="screen === 'results'" class="w-full space-y-6 text-center animate-fade-in py-4">
+            <div v-if="screen === 'results'" class="w-full space-y-6 text-center py-4">
                 <div class="bg-gradient-to-b from-yellow-300 to-amber-400 p-6 rounded-3xl shadow-xl border-4 border-white text-slate-900 relative">
                     <span class="text-6xl block mb-2">🎉</span>
                     <h2 class="text-3xl font-black uppercase tracking-wide font-['Fredoka'] text-amber-950">Hebat, {{ user }}!</h2>
@@ -247,66 +271,54 @@
     </div>
 
     <script>
-        const { createApp, ref, computed, onMounted, watch } = Vue;
+        const { createApp, ref, computed, onMounted } = Vue;
 
         createApp({
             setup() {
-                // Sesi State
                 const user = ref(localStorage.getItem('math_pintar_user') || null);
                 const usernameInput = ref('');
                 const screen = ref(user.value ? 'menu' : 'login');
                 
-                // Konfigurasi Latihan
                 const config = ref({
                     operation: 'Tambah',
                     totalQuestions: 10,
                     difficulty: 'Mudah'
                 });
 
-                // Gameplay State
                 const questions = ref([]);
                 const currentQuestionIndex = ref(0);
                 const score = ref(0);
-                const usedQuestionCombos = ref(new Set()); // Menghalang soalan berulang dalam sesi
+                const usedQuestionCombos = ref(new Set());
 
-                // Input Data Struktur mengikut Modul Bentuk Lazim
-                const answerArray = ref([]); // Menyimpan digit jawapan dari Kanan ke Kiri [0]=sa, [1]=puluh, etc.
-                const carryArray = ref([]);  // Untuk tambah / darab carry
-                const borrowArray = ref([]); // Untuk tolak borrowing
+                const answerArray = ref([]); 
+                const carryArray = ref([]);  
+                const borrowArray = ref([]); 
                 
-                // Pembahagian Khusus (Langkah demi langkah)
                 const divisionInputs = ref({
                     quotient: '',
                     multiply: '',
                     remainder: ''
                 });
 
-                // Focus Element Tracker
                 const activeTarget = ref({ type: 'answer', index: 0 });
 
-                // Timer States
                 const timerSeconds = ref(0);
                 const timerInterval = ref(null);
                 const finalTimeDisplay = ref('');
 
-                // Lifecycle
                 onMounted(() => {
-                    if (user.value) {
-                        screen.value = 'menu';
-                    }
+                    if (user.value) screen.value = 'menu';
                 });
 
-                // Computed Properties untuk pembinaan digit Tolak
                 const currentQuestion = computed(() => {
                     return questions.value[currentQuestionIndex.value] || { num1: 0, num2: 0 };
                 });
 
-                const num1Digits = computed(() => {
-                    return String(currentQuestion.value.num1).split('').reverse().map(Number);
-                });
-
-                const num2Digits = computed(() => {
-                    return String(currentQuestion.value.num2).split('').reverse().map(Number);
+                // Mengira saiz lajur grid menegak maksimum berdasarkan bilangan digit terpanjang soalan semasa + 1 (untuk carry/jawapan berlebihan)
+                const maxColumns = computed(() => {
+                    const len1 = String(currentQuestion.value.num1).length;
+                    const len2 = String(currentQuestion.value.num2).length;
+                    return Math.max(len1, len2) + (config.value.operation === 'Tambah' || config.value.operation === 'Darab' ? 1 : 0);
                 });
 
                 const formattedTime = computed(() => {
@@ -320,7 +332,16 @@
                     return Math.round((score.value / currentQuestionIndex.value) * 100);
                 });
 
-                // Fungsi Log Masuk & Keluar
+                // Mengambil digit spesifik mengikut kedudukan indeks nilai tempat (0 = Sa, 1 = Puluh, 2 = Ratus...)
+                const getDigitAt = (number, index) => {
+                    const str = String(number);
+                    const revIndex = str.length - 1 - index;
+                    if (revIndex >= 0 && revIndex < str.length) {
+                        return str[revIndex];
+                    }
+                    return ''; // Kembalikan kosong jika nilai tempat itu tiada digit (cth: ratus bagi nombor puluh)
+                };
+
                 const login = () => {
                     if (usernameInput.value.trim()) {
                         user.value = usernameInput.value.trim();
@@ -337,7 +358,6 @@
                     usernameInput.value = '';
                 };
 
-                // PENGHASILAN SOALAN RAWAK BEBAS REPEAT
                 const generateQuestions = () => {
                     questions.value = [];
                     usedQuestionCombos.value.clear();
@@ -351,16 +371,15 @@
 
                         if (op === 'Tambah' || op === 'Tolak') {
                             if (diff === 'Mudah') {
-                                num1 = Math.floor(Math.random() * 90) + 10; // 2 digit
-                                num2 = Math.floor(Math.random() * 9) + 1;   // 1 digit
+                                num1 = Math.floor(Math.random() * 90) + 10; 
+                                num2 = Math.floor(Math.random() * 9) + 1;   
                             } else if (diff === 'Sederhana') {
-                                num1 = Math.floor(Math.random() * 900) + 100; // 3 digit
-                                num2 = Math.floor(Math.random() * 90) + 10;   // 2 digit
+                                num1 = Math.floor(Math.random() * 900) + 100; 
+                                num2 = Math.floor(Math.random() * 90) + 10;   
                             } else {
-                                num1 = Math.floor(Math.random() * 9000) + 1000; // 4 digit
-                                num2 = Math.floor(Math.random() * 900) + 100;   // 3 digit
+                                num1 = Math.floor(Math.random() * 9000) + 1000; 
+                                num2 = Math.floor(Math.random() * 900) + 100;   
                             }
-                            // Aturan Tolak: Sentiasa pastikan nilai atas lebih besar
                             if (op === 'Tolak' && num1 < num2) {
                                 let temp = num1; num1 = num2; num2 = temp;
                             }
@@ -377,20 +396,19 @@
                             }
                         } else if (op === 'Bahagi') {
                             if (diff === 'Mudah') {
-                                num2 = Math.floor(Math.random() * 8) + 2; // 2-9
-                                let quotient = Math.floor(Math.random() * 9) + 1; // 1-9
-                                num1 = num2 * quotient; // Tiada baki
+                                num2 = Math.floor(Math.random() * 8) + 2; 
+                                let quotient = Math.floor(Math.random() * 9) + 1; 
+                                num1 = num2 * quotient; 
                             } else if (diff === 'Sederhana') {
                                 num2 = Math.floor(Math.random() * 8) + 2;
                                 num1 = Math.floor(Math.random() * 80) + 15;
-                                if (num1 % num2 === 0) num1 += 1; // Pastikan ada baki kecil jika kebetulan genap
+                                if (num1 % num2 === 0) num1 += 1; 
                             } else {
-                                num2 = Math.floor(Math.random() * 11) + 2; // 2-12
+                                num2 = Math.floor(Math.random() * 11) + 2; 
                                 num1 = Math.floor(Math.random() * 200) + 50;
                             }
                         }
 
-                        // Identifikasi unik gandingan (A + B sama dengan B + A untuk elak pengulangan)
                         const key = op === 'Tambah' || op === 'Darab' 
                             ? [num1, num2].sort((a,b)=>a-b).join('-')
                             : `${num1}-${num2}`;
@@ -402,7 +420,6 @@
                     }
                 };
 
-                // Memulakan Sesi Latihan Baru
                 const startSession = () => {
                     generateQuestions();
                     currentQuestionIndex.value = 0;
@@ -412,39 +429,29 @@
                     startTimer();
                 };
 
-                // Tetapan Layout Kotak Bentuk Lazim Bersandarkan Nilai Nombor Soalan Semasa
                 const setupQuestionLayout = () => {
                     const op = config.value.operation;
-                    const q = currentQuestion.value;
-
                     activeTarget.value = { type: 'answer', index: 0 };
 
-                    if (op === 'Tambah' || op === 'Darab') {
-                        // Menentukan anggaran panjang kotak jawapan maksima
-                        const maxLen = Math.max(String(q.num1).length, String(q.num2).length) + 1;
-                        answerArray.value = Array(maxLen).fill('');
-                        carryArray.value = Array(maxLen).fill('');
-                    } else if (op === 'Tolak') {
-                        const len = String(q.num1).length;
-                        answerArray.value = Array(len).fill('');
-                        borrowArray.value = Array(len).fill('');
-                    } else if (op === 'Bahagi') {
+                    // Sediakan kapasiti array padan dengan grid ruangan lajur menegak maksimum
+                    answerArray.value = Array(maxColumns.value).fill('');
+                    carryArray.value = Array(maxColumns.value).fill('');
+                    borrowArray.value = Array(maxColumns.value).fill('');
+
+                    if (op === 'Bahagi') {
                         divisionInputs.value = { quotient: '', multiply: '', remainder: '' };
                         activeTarget.value = { type: 'div_quotient', index: 0 };
                     }
                 };
 
-                // Mengendalikan Penandaan Potong Angka (Borrow) dalam Modul Tolak
                 const triggerBorrow = (idx) => {
                     if (config.value.operation !== 'Tolak') return;
                     activeTarget.value = { type: 'borrow', index: idx };
                 };
 
-                // Fungsi Custom Virtual Keypad Interaktif Murid
                 const pressKey = (key) => {
                     const target = activeTarget.value;
                     
-                    // Logik Padam Semua atau Satu Digit
                     if (key === 'C') {
                         clearActiveTarget();
                         return;
@@ -454,17 +461,15 @@
                         return;
                     }
 
-                    // Pengendalian Input Mengikut Jenis Kotak Dipilih
                     if (target.type === 'answer') {
                         answerArray.value[target.index] = key;
-                        // Gerak automatik ke kotak kiri seterusnya (Kanan ke Kiri)
-                        if (target.index < answerArray.value.length - 1) {
+                        // Pembetulan: Alirkan lompatan automatik fokus kotak ke nilai tempat kiri yang seterusnya
+                        if (target.index < maxColumns.value - 1) {
                             activeTarget.value = { type: 'answer', index: target.index + 1 };
                         }
                     } else if (target.type === 'carry') {
                         carryArray.value[target.index] = key;
                     } else if (target.type === 'borrow') {
-                        // Membenarkan murid menulis nombor borrow bertingkat (cth: 12 atau 4)
                         let currentVal = String(borrowArray.value[target.index] || '');
                         if (currentVal.length < 2) {
                             borrowArray.value[target.index] = currentVal + key;
@@ -513,14 +518,12 @@
                     }
                 };
 
-                // PENGESAHAN & SEMAKAN JAWAPAN
                 const submitAnswer = () => {
                     const op = config.value.operation;
                     const q = currentQuestion.value;
                     let isCorrect = false;
 
                     if (op === 'Tambah' || op === 'Tolak' || op === 'Darab') {
-                        // Gabungkan semula array jawapan dari kanan ke kiri menjadi satu nombor integer semula
                         const submittedString = [...answerArray.value].reverse().join('').trim();
                         const submittedAns = parseInt(submittedString, 10);
                         
@@ -529,9 +532,7 @@
                         if (op === 'Tolak') actualAns = q.num1 - q.num2;
                         if (op === 'Darab') actualAns = q.num1 * q.num2;
 
-                        if (submittedAns === actualAns) {
-                            isCorrect = true;
-                        }
+                        if (submittedAns === actualAns) isCorrect = true;
                     } else if (op === 'Bahagi') {
                         const actualQuotient = Math.floor(q.num1 / q.num2);
                         const actualRemainder = q.num1 % q.num2;
@@ -539,17 +540,13 @@
                         const studentQuotient = parseInt(divisionInputs.value.quotient, 10);
                         const studentRemainder = parseInt(divisionInputs.value.remainder, 10) || 0;
 
-                        // Tanda markah hanya dikira betul mutlak jika kedua-dua jawapan atas dan baki betul
                         if (studentQuotient === actualQuotient && studentRemainder === actualRemainder) {
                             isCorrect = true;
                         }
                     }
 
-                    if (isCorrect) {
-                        score.value += 1;
-                    }
+                    if (isCorrect) score.value += 1;
 
-                    // Bergerak ke soalan seterusnya atau tamatkan kuiz
                     if (currentQuestionIndex.value < config.value.totalQuestions - 1) {
                         currentQuestionIndex.value += 1;
                         setupQuestionLayout();
@@ -558,7 +555,6 @@
                     }
                 };
 
-                // Pengurusan Timer Pengiraan Masa Sesi Latihan
                 const startTimer = () => {
                     timerSeconds.value = 0;
                     timerInterval.value = setInterval(() => {
@@ -591,9 +587,9 @@
 
                 return {
                     user, usernameInput, screen, config, score, currentQuestionIndex,
-                    currentQuestion, num1Digits, num2Digits, answerArray, carryArray, borrowArray,
+                    currentQuestion, maxColumns, answerArray, carryArray, borrowArray,
                     divisionInputs, activeTarget, formattedTime, currentAccuracy, finalTimeDisplay,
-                    login, logout, startSession, triggerBorrow, pressKey, submitAnswer, retrySession, goToMenu
+                    getDigitAt, login, logout, startSession, triggerBorrow, pressKey, submitAnswer, retrySession, goToMenu
                 };
             }
         }).mount('#app');
