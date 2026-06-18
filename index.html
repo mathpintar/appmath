@@ -213,7 +213,7 @@
                                         {{ digit }}
                                     </span>
 
-                                    <input v-if="idx < String(currentQuestion.num1).length - 1" 
+                                    <input v-if="idx < String(currentQuestion.num1).length - 1 && divisionInputs.quotientArray[idx] !== '' && divisionInputs.quotientArray[idx] !== undefined" 
                                            type="text" readonly 
                                            :value="divisionInputs.remainderArray[idx] !== undefined ? divisionInputs.remainderArray[idx] : ''" 
                                            @click="activeTarget = {type: 'div_remainder_arr', index: idx}; playSound('click');" 
@@ -221,7 +221,7 @@
                                            class="w-7 h-7 text-xs text-center border-2 rounded absolute right-0 top-1 font-bold focus:outline-none cursor-pointer" placeholder="b">
                                 </div>
 
-                                <div v-if="idx === String(currentQuestion.num1).length - 1" class="absolute bottom-[-50px] flex flex-col items-center">
+                                <div v-if="idx === String(currentQuestion.num1).length - 1 && divisionInputs.quotientArray[idx] !== '' && divisionInputs.quotientArray[idx] !== undefined" class="absolute bottom-[-50px] flex flex-col items-center">
                                     <span class="text-[9px] text-red-500 font-bold uppercase tracking-tight">Baki Akhir</span>
                                     <input type="text" readonly 
                                            :value="divisionInputs.finalRemainder" 
