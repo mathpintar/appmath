@@ -108,16 +108,12 @@
                 </button>
             </div>
 
-            <div v-if="screen === 'gameplay' || screen === 'correction'" class="w-full flex flex-col justify-between items-center space-y-4">
+            <div v-if="screen === 'gameplay'" class="w-full flex flex-col justify-between items-center space-y-4">
                 
                 <div class="w-full bg-slate-100 p-3 rounded-2xl border-2 border-slate-200 flex justify-between items-center text-xs font-bold text-slate-600">
-                    <div v-if="screen === 'gameplay'">Soalan: <span class="text-emerald-600 text-sm">{{ currentQuestionIndex + 1 }}</span> / {{ config.totalQuestions }}</div>
-                    <div v-else class="text-red-600 text-sm bg-red-50 px-2 py-0.5 rounded-lg border border-red-200 animate-pulse">🛠️ MOD PEMBETULAN (Soalan {{ correctionIndex + 1 }})</div>
-                    
-                    <div v-if="screen === 'gameplay'" class="text-center font-mono text-sm bg-slate-800 text-yellow-400 px-3 py-1 rounded-full shadow-inner">⏱️ {{ formattedTime }}</div>
-                    
-                    <div v-if="screen === 'gameplay'">Skor: <span class="text-blue-600 text-sm">{{ score }}</span> ({{ currentAccuracy }}%)</div>
-                    <button v-else @click="exitCorrection" class="bg-slate-700 text-white px-2.5 py-1 rounded-md text-[11px]">Batal</button>
+                    <div>Soalan: <span class="text-emerald-600 text-sm">{{ currentQuestionIndex + 1 }}</span> / {{ config.totalQuestions }}</div>
+                    <div class="text-center font-mono text-sm bg-slate-800 text-yellow-400 px-3 py-1 rounded-full shadow-inner">⏱️ {{ formattedTime }}</div>
+                    <div>Skor: <span class="text-blue-600 text-sm">{{ score }}</span> ({{ currentAccuracy }}%)</div>
                 </div>
 
                 <div class="w-full flex-grow bg-amber-50 p-6 rounded-3xl border-4 border-amber-200 shadow-inner min-h-[300px] flex justify-center items-center relative math-font">
@@ -167,7 +163,7 @@
                                            :value="borrowArray[maxColumns - colIdx] || ''" 
                                            @click="activeTarget = {type: 'borrow', index: maxColumns - colIdx}; playSound('click');" 
                                            :class="activeTarget.type === 'borrow' && activeTarget.index === (maxColumns - colIdx) ? 'border-red-500 bg-red-100 animate-pulse' : 'border-red-300 bg-white'" 
-                                           class="w-10 h-8 text-sm text-center border-2 border-dashed rounded-md font-bold text-red-600 focus:outline-none cursor-pointer">
+                                class="w-10 h-8 text-sm text-center border-2 border-dashed rounded-md font-bold text-red-600 focus:outline-none cursor-pointer">
                                 </div>
 
                                 <div class="w-12 h-12 flex items-center justify-center text-4xl font-black text-slate-800 select-none cursor-pointer" @click="triggerBorrow(maxColumns - colIdx)">
@@ -191,84 +187,90 @@
                         </div>
                     </div>
 
-                    <div v-if="config.operation === 'Bahagi'" class="w-full flex flex-col items-center justify-center font-bold">
-                        <div class="flex items-start text-4xl mb-4 relative pr-6">
-                            <div class="pt-11 pr-3 text-slate-700">{{ currentQuestion.num2 }}</div>
-                            <div class="border-t-4 border-l-4 border-slate-800 rounded-tl-xl pl-4 pt-2 flex flex-col items-start">
-                                <div class="flex gap-2 mb-3">
-                                    <input type="text" readonly :value="divisionInputs.quotient" @click="activeTarget = {type: 'div_quotient', index: 0}; playSound('click');" :class="activeTarget.type === 'div_quotient' ? 'border-emerald-500 bg-emerald-100' : 'border-slate-400 bg-white'" class="w-24 h-12 text-center border-2 rounded-lg text-2xl font-bold focus:outline-none cursor-pointer">
-                                    <span class="text-xs text-slate-400 self-end ml-1">Jawapan</span>
+                    <div v-if="config.operation === 'Bahagi'" class="flex items-center justify-center font-bold">
+                        <div class="text-4xl text-slate-700 pr-3 pt-16">{{ currentQuestion.num2 }}</div>
+                        
+                        <div class="border-t-4 border-l-4 border-slate-800 rounded-tl-2xl pl-3 pt-2 flex">
+                            <div v-for="(digit, idx) in String(currentQuestion.num1).split('')" :key="'div-col-'+idx" class="flex flex-col items-center w-14 relative mx-1">
+                                
+                                <div class="w-12 h-12 flex items-center justify-center mb-2">
+                                    <input type="text" readonly 
+                                           :value="divisionInputs.quotientArray[idx] || ''" 
+                                           @click="activeTarget = {type: 'div_quotient_arr', index: idx}; playSound('click');" 
+                                           :class="activeTarget.type === 'div_quotient_arr' && activeTarget.index === idx ? 'border-emerald-500 bg-emerald-100 ring-2 ring-emerald-400' : 'border-slate-400 bg-white'" 
+                                           class="w-11 h-11 text-center border-2 rounded-xl text-2xl font-black text-slate-900 focus:outline-none cursor-pointer">
                                 </div>
-                                <div class="tracking-widest text-slate-800 mb-3 pl-1 text-4xl">{{ currentQuestion.num1 }}</div>
-                                <div class="flex flex-col items-start pl-1 border-b-2 border-slate-700 pb-2">
-                                    <input type="text" readonly :value="divisionInputs.multiply" @click="activeTarget = {type: 'div_multiply', index: 0}; playSound('click');" :class="activeTarget.type === 'div_multiply' ? 'border-blue-500 bg-blue-50' : 'border-dashed border-slate-400 bg-white'" class="w-28 h-10 text-center text-xl border-2 rounded-lg font-mono placeholder-slate-300 cursor-pointer" placeholder="Hasil ×">
+
+                                <div class="w-full border-b-2 border-slate-300 my-1"></div>
+
+                                <div class="w-full h-14 flex items-center justify-end relative pr-2">
+                                    <input v-if="idx > 0" type="text" readonly 
+                                           :value="divisionInputs.remainderArray[idx] || ''" 
+                                           @click="activeTarget = {type: 'div_remainder_arr', index: idx}; playSound('click');" 
+                                           :class="activeTarget.type === 'div_remainder_arr' && activeTarget.index === idx ? 'border-red-500 bg-red-100 animate-pulse' : 'border-red-300 bg-white'" 
+                                           class="w-7 h-7 text-xs text-center border-2 border-dashed rounded font-bold text-red-600 focus:outline-none absolute left-0 top-1 cursor-pointer transform -rotate-12" placeholder="b">
+                                    
+                                    <span class="text-4xl font-black text-slate-800 select-none">{{ digit }}</span>
                                 </div>
-                                <div class="flex gap-2 mt-3 pl-1">
-                                    <input type="text" readonly :value="divisionInputs.remainder" @click="activeTarget = {type: 'div_remainder', index: 0}; playSound('click');" :class="activeTarget.type === 'div_remainder' ? 'border-red-500 bg-red-100' : 'border-slate-400 bg-white'" class="w-24 h-12 text-center border-2 rounded-lg text-2xl font-bold focus:outline-none cursor-pointer">
-                                    <span class="text-xs text-slate-400 self-end ml-1">Baki</span>
+
+                                <div v-if="idx === String(currentQuestion.num1).split('').length - 1" class="absolute bottom-[-55px] right-[-10px] flex flex-col items-center">
+                                    <span class="text-[10px] text-red-500 font-bold">Baki Akhir</span>
+                                    <input type="text" readonly 
+                                           :value="divisionInputs.finalRemainder" 
+                                           @click="activeTarget = {type: 'div_final_remainder', index: 0}; playSound('click');" 
+                                           :class="activeTarget.type === 'div_final_remainder' ? 'border-red-500 bg-red-100 ring-2 ring-red-400' : 'border-slate-400 bg-white'" 
+                                           class="w-10 h-9 text-center border-2 rounded-lg text-lg font-bold focus:outline-none cursor-pointer">
                                 </div>
+
                             </div>
                         </div>
                     </div>
 
+                </div>
+
+                <div v-if="config.operation === 'Tolak' || config.operation === 'Bahagi'" class="w-full text-center text-xs font-bold bg-yellow-100 text-yellow-800 py-1.5 px-3 rounded-xl border border-yellow-300">
+                    <span v-if="config.operation === 'Tolak'">Sentuh nombor atas untuk potong bagi pinjam (*borrow*) jika tidak cukup!</span>
+                    <span v-if="config.operation === 'Bahagi'">Masukkan hasil bahagi di kotak atas bagi setiap digit. Letakkan baki di kotak kecil sebelah jika ada!</span>
                 </div>
 
                 <button @click="submitAnswer" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-black text-lg py-3.5 rounded-2xl shadow-md border-b-4 border-blue-700 transition-all transform active:scale-95 active:border-b-0 uppercase">
-                    {{ screen === 'gameplay' ? 'Hantar Jawapan Helaian ➡️' : 'Semak Pembetulan ✔️' }}
+                    Hantar Jawapan Helaian ➡️
                 </button>
             </div>
 
-            <div v-if="screen === 'results'" class="w-full space-y-5 py-2 my-auto">
-                <div class="bg-gradient-to-b from-yellow-300 to-amber-400 p-5 rounded-3xl shadow-xl border-4 border-white text-slate-900 relative">
-                    <span class="text-5xl block mb-1">🎉</span>
-                    <h2 class="text-2xl font-black uppercase tracking-wide font-kids text-amber-950">Hebat, {{ user }}!</h2>
-                    <p class="font-bold text-amber-900 text-xs">Anda telah menamatkan latihan.</p>
+            <div v-if="screen === 'results'" class="w-full space-y-6 text-center py-4 my-auto">
+                <div class="bg-gradient-to-b from-yellow-300 to-amber-400 p-6 rounded-3xl shadow-xl border-4 border-white text-slate-900 relative">
+                    <span class="text-6xl block mb-2">🎉</span>
+                    <h2 class="text-3xl font-black uppercase tracking-wide font-kids text-amber-950">Hebat, {{ user }}!</h2>
+                    <p class="font-bold text-amber-900">Anda telah menamatkan latihan.</p>
                 </div>
 
-                <div class="bg-white rounded-2xl border-2 border-slate-200 shadow-md p-4 space-y-2 font-bold text-sm text-left">
-                    <div class="flex justify-between border-b pb-1">
+                <div class="bg-white rounded-2xl border-2 border-slate-200 shadow-md p-4 space-y-3 font-bold text-left">
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-slate-500">Murid Pintar:</span>
+                        <span class="text-slate-800 text-lg uppercase">{{ user }}</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
                         <span class="text-slate-500">Gred Betul:</span>
-                        <span class="text-emerald-600 font-black">{{ score }} / {{ config.totalQuestions }}</span>
+                        <span class="text-emerald-600 text-xl font-black">{{ score }} / {{ config.totalQuestions }}</span>
                     </div>
-                    <div class="flex justify-between border-b pb-1">
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-slate-500">Salah Jawapan:</span>
+                        <span class="text-red-500 text-lg">{{ config.totalQuestions - score }}</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
                         <span class="text-slate-500">Peratusan Skor:</span>
-                        <span class="text-blue-600 font-black">{{ Math.round((score / config.totalQuestions) * 100) }}%</span>
+                        <span class="text-blue-600 text-xl font-black">{{ Math.round((score / config.totalQuestions) * 100) }}%</span>
                     </div>
-                    <div class="flex justify-between pt-0.5">
-                        <span class="text-slate-500">Masa Diambil:</span>
-                        <span class="text-purple-600 font-mono">{{ finalTimeDisplay }}</span>
-                    </div>
-                </div>
-
-                <div class="space-y-2 text-left">
-                    <h3 class="font-bold text-slate-700 text-sm px-1">📝 Senarai Semakan Soalan & Pembetulan:</h3>
-                    <div class="space-y-2 max-h-[220px] overflow-y-auto border border-slate-200 rounded-xl p-2 bg-slate-50">
-                        <div v-for="(q, index) in questions" :key="'rev-'+index" class="bg-white p-2.5 rounded-lg border border-slate-200 flex justify-between items-center text-sm shadow-sm">
-                            <div class="flex items-center gap-2">
-                                <span class="text-base">{{ q.isCorrect ? '✅' : '❌' }}</span>
-                                <div>
-                                    <span class="font-bold text-slate-500 text-xs">S{{ index + 1 }}:</span>
-                                    <span class="font-mono font-bold text-slate-800 ml-1">
-                                        {{ q.num1 }} {{ config.operation === 'Tambah' ? '+' : config.operation === 'Tolak' ? '-' : config.operation === 'Darab' ? '×' : '÷' }} {{ q.num2 }} = {{ q.studentAnsStr }}
-                                    </span>
-                                    <div v-if="!q.isCorrect" class="text-[11px] text-red-500 font-medium">
-                                        Jawapan betul: {{ q.correctAnsStr }}
-                                    </div>
-                                    <div v-else-if="q.wasCorrected" class="text-[11px] text-emerald-600 font-bold flex items-center gap-0.5">
-                                        ✨ Selesai dibetulkan!
-                                    </div>
-                                </div>
-                            </div>
-                            <button v-if="!q.isCorrect" @click="startCorrection(index)" class="bg-red-500 hover:bg-red-600 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg border-b-2 border-red-700 transition-all transform active:scale-95 shrink-0">
-                                🛠️ Betulkan
-                            </button>
-                        </div>
+                    <div class="flex justify-between pt-1">
+                        <span class="text-slate-500">Jumlah Masa Diambil:</span>
+                        <span class="text-purple-600 text-lg font-mono">{{ finalTimeDisplay }}</span>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 pt-2">
-                    <button @click="retrySession" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-base py-3 rounded-xl border-b-4 border-amber-600 transition-transform active:scale-95">🔁 Ulang Lagi</button>
-                    <button @click="goToMenu" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base py-3 rounded-xl border-b-4 border-emerald-700 transition-transform active:scale-95">🏠 Menu Utama</button>
+                <div class="grid grid-cols-2 gap-4">
+                    <button @click="retrySession" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-black text-lg py-3 rounded-xl border-b-4 border-amber-600 transition-transform active:scale-95">🔁 Ulang Lagi</button>
+                    <button @click="goToMenu" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg py-3 rounded-xl border-b-4 border-emerald-700 transition-transform active:scale-95">🏠 Menu Utama</button>
                 </div>
             </div>
 
@@ -339,7 +341,7 @@
 
         </main>
 
-        <footer v-if="screen === 'gameplay' || screen === 'correction'" class="bg-slate-200 p-3 rounded-t-3xl shadow-2xl w-full border-t border-slate-300 shrink-0">
+        <footer v-if="screen === 'gameplay'" class="bg-slate-200 p-3 rounded-t-3xl shadow-2xl w-full border-t border-slate-300 shrink-0">
             <div class="grid grid-cols-3 gap-2 max-w-sm mx-auto">
                 <button v-for="num in ['1', '2', '3', '4', '5', '6', '7', '8', '9']" :key="num" @click="pressKey(num)" class="bg-white active:bg-slate-300 font-bold text-2xl py-3 rounded-xl shadow-sm text-slate-800 border-b-4 border-slate-300 transition-all transform active:scale-95">
                     {{ num }}
@@ -378,17 +380,15 @@
                 const score = ref(0);
                 const usedQuestionCombos = ref(new Set());
 
-                // Correction properties
-                const correctionIndex = ref(null);
-
                 const answerArray = ref([]); 
                 const carryArray = ref([]);  
                 const borrowArray = ref([]); 
                 
+                // Diubah suai untuk menyimpan input dinamik array bagi operasi bahagi baharu
                 const divisionInputs = ref({
-                    quotient: '',
-                    multiply: '',
-                    remainder: ''
+                    quotientArray: [],
+                    remainderArray: [],
+                    finalRemainder: ''
                 });
 
                 const activeTarget = ref({ type: 'answer', index: 0 });
@@ -469,9 +469,6 @@
                 });
 
                 const currentQuestion = computed(() => {
-                    if (screen.value === 'correction' && correctionIndex.value !== null) {
-                        return questions.value[correctionIndex.value] || { num1: 0, num2: 0 };
-                    }
                     return questions.value[currentQuestionIndex.value] || { num1: 0, num2: 0 };
                 });
 
@@ -586,27 +583,39 @@
                             }
                         } else if (op === 'Darab') {
                             if (diff === 'Mudah') {
-                                num1 = Math.floor(Math.random() * 9) + 1; 
-                                num2 = Math.floor(Math.random() * 9) + 1; 
+                                num1 = Math.floor(Math.random() * 9) + 1;
+                                num2 = Math.floor(Math.random() * 9) + 1;
                             } else if (diff === 'Sederhana') {
-                                num1 = Math.floor(Math.random() * 90) + 10; 
-                                num2 = Math.floor(Math.random() * 9) + 1;  
+                                num1 = Math.floor(Math.random() * 90) + 10;
+                                num2 = Math.floor(Math.random() * 9) + 1;
                             } else {
-                                num1 = Math.floor(Math.random() * 900) + 100; 
-                                num2 = Math.floor(Math.random() * 9) + 1;   
+                                num1 = Math.floor(Math.random() * 900) + 100;
+                                num2 = Math.floor(Math.random() * 90) + 10;
                             }
                         } else if (op === 'Bahagi') {
                             if (diff === 'Mudah') {
+                                // 2 digit ÷ 1 digit (Jawapan tiada baki)
                                 num2 = Math.floor(Math.random() * 8) + 2; 
-                                let quotient = Math.floor(Math.random() * 9) + 1; 
+                                let quotient = Math.floor(Math.random() * 4) + 11; 
                                 num1 = num2 * quotient; 
+                                if (num1 > 99) {
+                                    quotient = Math.floor(99 / num2);
+                                    num1 = num2 * quotient;
+                                }
                             } else if (diff === 'Sederhana') {
+                                // 2 digit ÷ 1 digit (Jawapan ada baki)
                                 num2 = Math.floor(Math.random() * 8) + 2;
-                                num1 = Math.floor(Math.random() * 80) + 15;
-                                if (num1 % num2 === 0) num1 += 1; 
+                                num1 = Math.floor(Math.random() * 89) + 10;
+                                if (num1 % num2 === 0) {
+                                    num1 = (num1 + 1) > 99 ? num1 - 1 : num1 + 1;
+                                }
                             } else {
-                                num2 = Math.floor(Math.random() * 11) + 2; 
-                                num1 = Math.floor(Math.random() * 200) + 50;
+                                // Pro: 3 digit ÷ 1 digit (Jawapan ada baki)
+                                num2 = Math.floor(Math.random() * 8) + 2; 
+                                num1 = Math.floor(Math.random() * 899) + 100;
+                                if (num1 % num2 === 0) {
+                                    num1 = (num1 + 1) > 999 ? num1 - 1 : num1 + 1;
+                                }
                             }
                         }
 
@@ -616,14 +625,7 @@
 
                         if (!usedQuestionCombos.value.has(key)) {
                             usedQuestionCombos.value.add(key);
-                            questions.value.push({ 
-                                num1, 
-                                num2, 
-                                isCorrect: false, 
-                                studentAnsStr: '', 
-                                correctAnsStr: '',
-                                wasCorrected: false
-                            });
+                            questions.value.push({ num1, num2 });
                         }
                     }
                 };
@@ -633,7 +635,6 @@
                     generateQuestions();
                     currentQuestionIndex.value = 0;
                     score.value = 0;
-                    correctionIndex.value = null;
                     setupQuestionLayout();
                     screen.value = 'gameplay';
                     startTimer();
@@ -648,22 +649,14 @@
                     borrowArray.value = Array(maxColumns.value).fill('');
 
                     if (op === 'Bahagi') {
-                        divisionInputs.value = { quotient: '', multiply: '', remainder: '' };
-                        activeTarget.value = { type: 'div_quotient', index: 0 };
+                        const digitCount = String(currentQuestion.value.num1).length;
+                        divisionInputs.value = {
+                            quotientArray: Array(digitCount).fill(''),
+                            remainderArray: Array(digitCount).fill(''),
+                            finalRemainder: ''
+                        };
+                        activeTarget.value = { type: 'div_quotient_arr', index: 0 };
                     }
-                };
-
-                const startCorrection = (index) => {
-                    playSound('click');
-                    correctionIndex.value = index;
-                    screen.value = 'correction';
-                    setupQuestionLayout();
-                };
-
-                const exitCorrection = () => {
-                    playSound('click');
-                    correctionIndex.value = null;
-                    screen.value = 'results';
                 };
 
                 const triggerBorrow = (idx) => {
@@ -702,12 +695,12 @@
                         if (currentVal.length < 2) {
                             borrowArray.value[target.index] = currentVal + key;
                         }
-                    } else if (target.type === 'div_quotient') {
-                        divisionInputs.value.quotient = String(divisionInputs.value.quotient) + key;
-                    } else if (target.type === 'div_multiply') {
-                        divisionInputs.value.multiply = String(divisionInputs.value.multiply) + key;
-                    } else if (target.type === 'div_remainder') {
-                        divisionInputs.value.remainder = String(divisionInputs.value.remainder) + key;
+                    } else if (target.type === 'div_quotient_arr') {
+                        divisionInputs.value.quotientArray[target.index] = key;
+                    } else if (target.type === 'div_remainder_arr') {
+                        divisionInputs.value.remainderArray[target.index] = key;
+                    } else if (target.type === 'div_final_remainder') {
+                        divisionInputs.value.finalRemainder = key;
                     }
                 };
 
@@ -716,9 +709,9 @@
                     if (target.type === 'answer') answerArray.value[target.index] = '';
                     if (target.type === 'carry') carryArray.value[target.index] = '';
                     if (target.type === 'borrow') borrowArray.value[target.index] = '';
-                    if (target.type === 'div_quotient') divisionInputs.value.quotient = '';
-                    if (target.type === 'div_multiply') divisionInputs.value.multiply = '';
-                    if (target.type === 'div_remainder') divisionInputs.value.remainder = '';
+                    if (target.type === 'div_quotient_arr') divisionInputs.value.quotientArray[target.index] = '';
+                    if (target.type === 'div_remainder_arr') divisionInputs.value.remainderArray[target.index] = '';
+                    if (target.type === 'div_final_remainder') divisionInputs.value.finalRemainder = '';
                 };
 
                 const backspaceActiveTarget = () => {
@@ -743,17 +736,14 @@
                         let val = String(borrowArray.value[target.index] || '');
                         borrowArray.value[target.index] = val.substring(0, val.length - 1);
                     }
-                    if (target.type === 'div_quotient') {
-                        let val = divisionInputs.value.quotient;
-                        divisionInputs.value.quotient = val.substring(0, val.length - 1);
+                    if (target.type === 'div_quotient_arr') {
+                        divisionInputs.value.quotientArray[target.index] = '';
                     }
-                    if (target.type === 'div_multiply') {
-                        let val = divisionInputs.value.multiply;
-                        divisionInputs.value.multiply = val.substring(0, val.length - 1);
+                    if (target.type === 'div_remainder_arr') {
+                        divisionInputs.value.remainderArray[target.index] = '';
                     }
-                    if (target.type === 'div_remainder') {
-                        let val = divisionInputs.value.remainder;
-                        divisionInputs.value.remainder = val.substring(0, val.length - 1);
+                    if (target.type === 'div_final_remainder') {
+                        divisionInputs.value.finalRemainder = '';
                     }
                 };
 
@@ -761,61 +751,30 @@
                     const op = config.value.operation;
                     const q = currentQuestion.value;
                     let isCorrect = false;
-                    let studentAnsStr = '';
-                    let correctAnsStr = '';
 
-                    // Calculate Correct & Student Values
                     if (op === 'Tambah' || op === 'Tolak' || op === 'Darab') {
                         const submittedString = [...answerArray.value].reverse().join('').trim();
-                        const submittedAns = parseInt(submittedString, 10) || 0;
-                        studentAnsStr = submittedString || '0';
+                        const submittedAns = parseInt(submittedString, 10);
                         
                         let actualAns = 0;
                         if (op === 'Tambah') actualAns = q.num1 + q.num2;
                         if (op === 'Tolak') actualAns = q.num1 - q.num2;
                         if (op === 'Darab') actualAns = q.num1 * q.num2;
-                        correctAnsStr = String(actualAns);
 
                         if (submittedAns === actualAns) isCorrect = true;
                     } else if (op === 'Bahagi') {
                         const actualQuotient = Math.floor(q.num1 / q.num2);
                         const actualRemainder = q.num1 % q.num2;
 
-                        const sQuotient = parseInt(divisionInputs.value.quotient, 10) || 0;
-                        const sRemainder = parseInt(divisionInputs.value.remainder, 10) || 0;
+                        // Gabungkan string array quotient yang dimasukkan dari kiri ke kanan
+                        const submittedQuotientStr = divisionInputs.value.quotientArray.join('').trim();
+                        const studentQuotient = parseInt(submittedQuotientStr, 10) || 0;
+                        const studentRemainder = parseInt(divisionInputs.value.finalRemainder, 10) || 0;
 
-                        studentAnsStr = `Jawapan: ${sQuotient}${sRemainder > 0 ? ' Baki ' + sRemainder : ''}`;
-                        correctAnsStr = `${actualQuotient}${actualRemainder > 0 ? ' Baki ' + actualRemainder : ''}`;
-
-                        if (sQuotient === actualQuotient && sRemainder === actualRemainder) {
+                        if (studentQuotient === actualQuotient && studentRemainder === actualRemainder) {
                             isCorrect = true;
                         }
                     }
-
-                    // MOD CORRECTION (PEMBETULAN)
-                    if (screen.value === 'correction') {
-                        if (isCorrect) {
-                            playSound('correct');
-                            alert("Syabas! Pembetulan anda betul! 🎉");
-                            
-                            // Ambil index soalan yang sedang diperbetulkan
-                            const idx = correctionIndex.value;
-                            questions.value[idx].isCorrect = true;
-                            questions.value[idx].studentAnsStr = studentAnsStr;
-                            questions.value[idx].wasCorrected = true; // Ditanda sebagai berjaya dibetulkan
-                            
-                            exitCorrection();
-                        } else {
-                            playSound('wrong');
-                            alert("Alamak, jawapan pembetulan masih kurang tepat. Cuba lagi ya! 💪");
-                        }
-                        return;
-                    }
-
-                    // MOD NORMAL GAMEPLAY
-                    q.isCorrect = isCorrect;
-                    q.studentAnsStr = studentAnsStr;
-                    q.correctAnsStr = correctAnsStr;
 
                     if (isCorrect) {
                         score.value += 1;
@@ -858,7 +817,6 @@
                     const now = new Date();
                     const dateStr = `${now.getDate()}/${now.getMonth()+1} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
                     
-                    // Rekod prestasi dikekalkan berdasarkan skor asal sesi tamat
                     const newRecord = {
                         operation: config.value.operation,
                         difficulty: config.value.difficulty,
@@ -889,10 +847,9 @@
                     user, usernameInput, screen, config, score, currentQuestionIndex,
                     currentQuestion, maxColumns, answerArray, carryArray, borrowArray,
                     divisionInputs, activeTarget, formattedTime, currentAccuracy, finalTimeDisplay,
-                    reportList, reportSummary, questions, correctionIndex,
+                    reportList, reportSummary,
                     getDigitAt, login, logout, changeOperation, startSession, triggerBorrow, pressKey, 
-                    submitAnswer, retrySession, goToMenu, playSound, openReports, clearReports,
-                    startCorrection, exitCorrection
+                    submitAnswer, retrySession, goToMenu, playSound, openReports, clearReports
                 };
             }
         }).mount('#app');
