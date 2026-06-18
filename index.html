@@ -217,8 +217,8 @@
                                            type="text" readonly 
                                            :value="divisionInputs.remainderArray[idx] !== undefined ? divisionInputs.remainderArray[idx] : ''" 
                                            @click="activeTarget = {type: 'div_remainder_arr', index: idx}; playSound('click');" 
-                                           :class="activeTarget.type === 'div_remainder_arr' && activeTarget.index === idx ? 'border-emerald-500 bg-emerald-100 ring-2 ring-emerald-400' : 'border-red-300 bg-white text-red-600'" 
-                                           class="w-7 h-7 text-xs text-center border-2 border-dashed rounded absolute right-0 top-1 font-bold focus:outline-none cursor-pointer transform rotate-12" placeholder="b">
+                                           :class="activeTarget.type === 'div_remainder_arr' && activeTarget.index === idx ? 'border-emerald-500 bg-emerald-100 ring-2 ring-emerald-400' : 'border-blue-400 border-solid bg-white text-blue-600'" 
+                                           class="w-7 h-7 text-xs text-center border-2 rounded absolute right-0 top-1 font-bold focus:outline-none cursor-pointer" placeholder="b">
                                 </div>
 
                                 <div v-if="idx === String(currentQuestion.num1).length - 1" class="absolute bottom-[-50px] flex flex-col items-center">
@@ -407,7 +407,6 @@
                 const carryArray = ref([]);  
                 const borrowArray = ref([]); 
                 
-                // Menyimpan input bagi operasi bahagi baharu
                 const divisionInputs = ref({
                     quotientArray: [],
                     remainderArray: [],
@@ -740,21 +739,15 @@
                             borrowArray.value[target.index] = currentVal + key;
                         }
                     } 
-                    // LOGIK PERGERAKAN AUTOMATIK BAGI BAHAGI BARU
                     else if (target.type === 'div_quotient_arr') {
                         divisionInputs.value.quotientArray[target.index] = key;
-                        
-                        // Selepas isi kotak atas, sistem automatik gerak ke kotak baki sebelah kanan (jika belum lajur terakhir)
                         if (target.index < digitCount - 1) {
                             activeTarget.value = { type: 'div_remainder_arr', index: target.index };
                         } else {
-                            // Jika sudah lajur terakhir, gerak ke kotak baki akhir bawah
                             activeTarget.value = { type: 'div_final_remainder', index: 0 };
                         }
                     } else if (target.type === 'div_remainder_arr') {
                         divisionInputs.value.remainderArray[target.index] = key;
-                        
-                        // Selepas isi baki sebelah kanan, gerak ke kotak jawapan atas bagi lajur seterusnya
                         if (target.index + 1 < digitCount) {
                             activeTarget.value = { type: 'div_quotient_arr', index: target.index + 1 };
                         }
@@ -847,7 +840,6 @@
                         }
                     }
 
-                    // MOD CORRECTION (PEMBETULAN)
                     if (screen.value === 'correction') {
                         if (isCorrect) {
                             playSound('correct');
@@ -866,7 +858,6 @@
                         return;
                     }
 
-                    // MOD NORMAL GAMEPLAY
                     questions.value[currentQuestionIndex.value].isCorrect = isCorrect;
                     questions.value[currentQuestionIndex.value].studentAnsStr = studentAnsStr;
                     questions.value[currentQuestionIndex.value].correctAnsStr = correctAnsStr;
